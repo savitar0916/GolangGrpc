@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.12
-// source: guestbooks.proto
+// source: proto/guestbooks.proto
 
 package proto
 
@@ -107,5 +107,5 @@ var GuestbookService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "guestbooks.proto",
+	Metadata: "proto/guestbooks.proto",
 }
