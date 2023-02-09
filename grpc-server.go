@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 
 	"google.golang.org/grpc"
@@ -15,23 +14,22 @@ type GuestbooksServiceServer struct {
 	pb.GuestbookServiceServer
 }
 
-var count int
+var activeRoutines int
 
 func (g *GuestbooksServiceServer) GetGuestbook(ctx context.Context, request *pb.GetGuestbookRequest) (response *pb.GetGuestbookResponse, err error) {
 	query := request.Query
 	//fmt.Println("Request:", query)
-
-	concurrentLimit := 1                        // 并发的限制数量
-	sem := make(chan struct{}, concurrentLimit) // 创建信号量，设置并发限制
-	channel := make(chan *pb.GetGuestbookResponse)
-	sem <- struct{}{}
-	go func() {
+	//channel := make(chan *pb.GetGuestbookResponse)
+	activeRoutines++
+	//log.Println("啟動:", activeRoutines)
+	if (activeRoutines)%10000 == 0 {
+		fmt.Println("請求數:", activeRoutines)
+	}
+	func() {
 		if query == "Exercise" {
-			count++
-			log.Println(count)
 			response = &pb.GetGuestbookResponse{
 				Message: "Success",
-				Status:  400,
+				Status:  200,
 				Guestbooks: []*pb.Guestbook{{
 					Id:      "stwe123",
 					Name:    "Adam",
@@ -40,13 +38,17 @@ func (g *GuestbooksServiceServer) GetGuestbook(ctx context.Context, request *pb.
 					Status:  true,
 				}},
 			}
-			channel <- response
+			//channel <- response
 		} else {
-			channel <- nil
+			response = &pb.GetGuestbookResponse{
+				Message:    "Fail",
+				Status:     400,
+				Guestbooks: []*pb.Guestbook{},
+			}
+			//channel <- nil
 		}
-		<-sem
 	}()
-	<-channel
+	//<-channel
 	if err != nil {
 		err = errors.New("query fail")
 		return

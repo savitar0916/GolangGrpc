@@ -30,28 +30,37 @@ func main() {
 	fmt.Printf("%v個用戶\n", users)
 	fmt.Println("------------------------")
 	fmt.Printf("%v個請求\n", request)
-	fmt.Println("-----開始發送Request-----")
+	fmt.Println("------------------------")
+	fmt.Println("開始發送請求")
+	fmt.Println("------------------------")
 	start := time.Now()
 	var wg sync.WaitGroup
 	wg.Add(users)
-	for i := 0; i < users; i++ {
+	for i := 1; i <= users; i++ {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < request; j++ {
+			for j := 1; j <= request; j++ {
 				_, err := client.GetGuestbook(context.Background(), &pb.GetGuestbookRequest{Query: "Exercise"})
 				if err != nil {
-					fmt.Printf("could not greet: %v\n", err)
+					fmt.Printf("Error: %v\n", err)
 				}
 				time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+				//fmt.Println(response)
 			}
 		}()
+		if (i*request)%10000 == 0 {
+			fmt.Println("目前請求數:", i*request)
+		}
 	}
 	wg.Wait()
 	elapsed := time.Since(start)
 	fmt.Println("------------------------")
-	fmt.Println("花費時間:", elapsed)
+	fmt.Println("總共請求:", users*request)
 	fmt.Println("------------------------")
-	fmt.Println("吞吐量為:", float64(users*request)/elapsed.Seconds())
+	fmt.Println("總共時間:", elapsed)
+	fmt.Println("------------------------")
+	var RPS = fmt.Sprintf("%.2f", float64(users*request)/elapsed.Seconds())
+	fmt.Println("吞吐量為:", RPS)
 	// fmt.Printf("Time elapsed: %s\n", elapsed)
 	// fmt.Printf("Throughput: %f requests/second\n", float64(N*M)/elapsed.Seconds())
 }
